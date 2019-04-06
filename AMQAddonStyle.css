@@ -1,0 +1,67 @@
+
+#gcChatMenu > div.clickAble {
+    transform: skewX(-35.5deg);
+	width: 33.33333%;
+}
+
+#gcChatMenu.queueEnabled > div.clickAble {
+	width: 25%;
+}
+
+#gcChatMenu > div.clickAble:first-child {
+    margin-left: -13px;
+    width: calc(33.33333% + 13px);
+}
+
+#gcChatMenu.queueEnabled > div.clickAble:first-child {
+    margin-left: -13px;
+    width: calc(25% + 13px);
+}
+
+#gcHistoryContainer > .gcCorrectAnswer:nth-child(2n) {
+	background-color: #112211;
+}
+
+#gcHistoryContainer > .gcCorrectAnswer:nth-child(2n + 1) {
+	background-color: #114408;
+}
+
+#gcHistoryContainer > .gcIncorrectAnswer:nth-child(2n + 1) {
+	background-color: #440000;
+}
+
+#gcHistoryContainer > .gcIncorrectAnswer:nth-child(2n) {
+	background-color: #2a0000;
+}
+
+
+#AutoReadyCheck {
+	margin-left: 10px;
+}
+
+#customSettingsP {
+	display: inline-block;
+    font-size: 20px;
+    margin-top: 8px;
+    margin-left: 15px;
+}
+
+#customSettings {
+	position: absolute;
+	display: inline-block;
+	right: 204px;
+	width: 170px;
+	bottom: 0px;
+	height: 45px;
+}
+
+#gcHistoryContainer > li {
+	font-size: 15px;
+    line-height: 1.2em;
+	padding: 5px 17px 5px 7px;
+	word-wrap: break-word;
+}
+
+#gcHistoryContent {
+	height: 100%
+}

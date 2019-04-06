@@ -1,0 +1,22 @@
+{
+    "name": "AMQ Addons",
+    "version": "1.0",
+    "description": "History / Auto-ready / ? ? ?",
+    "manifest_version": 2,
+    "permissions": [
+      "activeTab",
+      "https://animemusicquiz.com/*"
+    ],    
+    "web_accessible_resources": [
+    "AMQAddonScript.js",
+    "AMQAddonStyle.css"
+    ],
+    "content_scripts": [
+    {
+        "matches": [
+        "https://animemusicquiz.com/*"
+        ],
+        "js": ["thirdParty/jquery-3.1.1.min.js", "script.js"]
+    }
+    ]
+}
