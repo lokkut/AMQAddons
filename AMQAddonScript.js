@@ -189,4 +189,45 @@ $("#smAutoReady").on('click', () => {
     }
 });
 
+
+
+// awesomeplete
+let DefaultCustomAwesomepleteAcronyms = { ubw: 'Fate/stay night: Unlimited Blade Works' };
+
+_OldStuff.AmqAwesomeplete = AmqAwesomeplete;
+_OldStuff.AwesomepleteEvaluate = AmqAwesomeplete.prototype.evaluate;
+
+AmqAwesomeplete = function( input, o, scrollable )
+{
+	_OldStuff.AmqAwesomeplete.call( this, input, o, scrollable );
+	let o_f = o.filter;
+	o.filter = ( text, input ) => 
+	{
+		return o_f(text, input) || 
+			( this.acronym && RegExp(input.trim(), "i").test(this.acronym) && DefaultCustomAwesomepleteAcronyms[this.acronym] == text.label );
+	};
+
+	this.filter = o.filter;
+}
+
+AmqAwesomeplete.prototype = _OldStuff.AmqAwesomeplete.prototype;
+
+AmqAwesomeplete.prototype.evaluate = function()
+{
+	if( DefaultCustomAwesomepleteAcronyms[this.input.value] )
+		{
+		if( !this.currentSubList.includes( DefaultCustomAwesomepleteAcronyms[this.input.value] ) )
+			{
+			this.currentSubList.unshift( DefaultCustomAwesomepleteAcronyms[this.input.value] );
+			}
+		this.acronym = this.input.value;
+		}
+	else	
+		{
+		this.acronym = null;
+		}
+
+	_OldStuff.AwesomepleteEvaluate.call( this );	
+}
+
 }
