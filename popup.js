@@ -13,6 +13,9 @@ var AcronymTable = new Tabulator("#AcronymTable", {
     columns:[
         {title:"Acronym", field:"name", width:120, editor:"input"},
         {title:"Name", field:"full_name", width:200, editor:"input"},
+        {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
+            cell.getRow().delete();
+        }}
     ],
 });
 
@@ -36,6 +39,10 @@ UpdateAcronyms();
 function NewAcronym()
 {
     AcronymTable.addData([{name:"Short",full_name:"Full Name"}]);
+}
+
+function removeRow(){
+    AcronymTable.addD
 }
 
 $("#SaveAcronymButton").on('click', SetAcronyms );
