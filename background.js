@@ -37,3 +37,42 @@ MessageHandlers.SetAcronyms = function( data, SendResult )
         // ? 
     });
 }
+
+var Options = {};
+
+MessageHandlers.SetOption = function(data, SendResult )
+{   
+    Options[data.key] = data.value;
+    let n = JSON.stringify(Options);
+    chrome.storage.sync.set({Options: Options},function()
+    {
+        // ? 
+    });
+}
+
+MessageHandlers.GetOption = function(data, SendResult )
+{
+    let key = data;
+    chrome.storage.sync.get(['Options'],function(result)
+    {
+        if( !result.Options )
+            {
+            SendResult( null );
+            }
+        else  
+            {
+            SendResult( JSON.parse( result.Options )[key] );
+            }
+    });
+    return true;
+}
+
+// load options to start
+chrome.storage.sync.get(['Options'],function(result)
+{
+    Options = JSON.parse( result.Options );
+    if( !Options )
+        {
+        Options = {};
+        }
+});
