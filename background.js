@@ -30,7 +30,6 @@ MessageHandlers.GetAcronyms = function( data, SendResult )
 
 MessageHandlers.SetAcronyms = function( data, SendResult )
 {   
-
     let n = JSON.stringify(data);
     chrome.storage.sync.set({AcronymList: n},function()
     {
@@ -42,8 +41,7 @@ var Options = {};
 
 MessageHandlers.SetOption = function(data, SendResult )
 {   
-    Options[data.key] = data.value;
-    let n = JSON.stringify(Options);
+    Options[data.Key] = data.Value;
     chrome.storage.sync.set({Options: Options},function()
     {
         // ? 
@@ -61,7 +59,7 @@ MessageHandlers.GetOption = function(data, SendResult )
             }
         else  
             {
-            SendResult( JSON.parse( result.Options )[key] );
+            SendResult( result.Options[key] );
             }
     });
     return true;
@@ -70,8 +68,11 @@ MessageHandlers.GetOption = function(data, SendResult )
 // load options to start
 chrome.storage.sync.get(['Options'],function(result)
 {
-    Options = JSON.parse( result.Options );
-    if( !Options )
+    if( result.Options )
+        {
+        Options = result.Options;
+        }
+    else
         {
         Options = {};
         }

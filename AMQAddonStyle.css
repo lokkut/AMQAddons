@@ -133,3 +133,7 @@
 .IncorrectAnswer .historyanswer {
 	text-shadow: 0 0 5px #fb1212
 }
+
+#optionsContainer.popOut {
+	transition: transform 0.2s ease-in-out;
+}

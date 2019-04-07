@@ -2,6 +2,32 @@
 if( typeof afkKicker !== 'undefined' ){
 let ExtensionId = "jlhjjajhlgnaljjmklmpcmojbemcahpp";
 
+function MakeMessage( Topic, Data )
+{
+	return { Topic: Topic, Data: Data };
+}
+
+function SendMessage( Topic, Data, Callback )
+{
+	chrome.runtime.sendMessage( ExtensionId, MakeMessage( Topic, Data ), function(result)
+	{   
+		if(!result){return;}
+		Callback(result);
+	});
+}
+
+function GetOption( Key, Callback )
+{
+	SendMessage( "GetOption", Key, Callback );
+}
+
+function SetOption( Key, Value )
+{
+	SendMessage( "SetOption", { Key: Key, Value: Value } );
+}
+
+
+
 // afk stuff
 afkKicker._AFK_TIMEOUT_TIME = 300 * 60 * 1000; // 5 hours : )
 afkKicker._HOST_AFK_TIMEOUT_TIME = 300 * 60 * 1000; // 5 hours : ) 
@@ -279,9 +305,17 @@ $("#smAutoReady").on('click', () => {
         options.AutoReady = false;
     } else {
         options.AutoReady = true;
-    }
+	}
+	SetOption( "AutoReady", options.AutoReady );
 });
 
+GetOption( "AutoReady", function(result)
+{
+	if( result ) {
+		options.AutoReady= true;
+		$("#smAutoReady").prop('checked',true);
+	}
+});
 
 
 // awesomeplete
@@ -289,10 +323,7 @@ let CustomAwesomepleteAcronyms = {
 
  };
 
-function MakeMessage( Topic, Data )
-{
-	return { Topic: Topic, Data: Data };
-}
+
 
 function UpdateAcronyms()
 {
@@ -300,7 +331,7 @@ function UpdateAcronyms()
 	{   
 		if(!result){return;}
 		
-		for( var i in result )
+		for( let i in result )
 			{
 			CustomAwesomepleteAcronyms[result[i].name.toLowerCase()] = result[i].full_name;
 			}
@@ -351,39 +382,51 @@ AmqAwesomeplete.prototype.evaluate = function()
 }
 
 
+
 if (document.getElementById("settingModal")) {
-let optionsModal = document.getElementById("settingModal");
-let tabs = optionsModal.children[0].children[0].children[1];
-let modalBody = optionsModal.children[0].children[0].children[2];
+	let optionsModal = document.getElementById("settingModal");
+	let tabs = optionsModal.children[0].children[0].children[1];
+	let modalBody = optionsModal.children[0].children[0].children[2];
 
-let addOnSettings = document.createElement("div");
-addOnSettings.className = "tab leftRightButtonTop clickAble";
-addOnSettings.onclick = function() {
-	options.selectTab('settingsAmqAddon', this);
+	let addOnSettings = document.createElement("div");
+	addOnSettings.className = "tab leftRightButtonTop clickAble";
+	addOnSettings.onclick = function() {
+		options.selectTab('settingsAmqAddon', this);
+	};
+	addOnSettings.innerHTML = "<h5>Add-on</h5>";
+
+	tabs.appendChild(addOnSettings);
+
+	let addOnSettingsModalBody = document.createElement("div");
+	addOnSettingsModalBody.id = "settingsAmqAddon";
+	addOnSettingsModalBody.className = "settingContentContainer hide";
+
+	addOnSettingsModalBody.innerHTML = `<div class="row">
+	<div class="col-xs-4 text-center">
+		add shit here
+	</div>
+	</div>`;
+	modalBody.appendChild(addOnSettingsModalBody);
+
+	options.$SETTING_TABS.push(addOnSettings);
+	options.$SETTING_CONTAINERS.push(addOnSettingsModalBody);
 };
-addOnSettings.innerHTML = "<h5>Add-on</h5>";
-
-tabs.appendChild(addOnSettings);
-
-let addOnSettingsModalBody = document.createElement("div");
-addOnSettingsModalBody.id = "settingsAmqAddon";
-addOnSettingsModalBody.className = "settingContentContainer hide";
-
-addOnSettingsModalBody.innerHTML = `<div class="row">
-<div class="col-xs-4 text-center">
-	add shit here
-</div>
-</div>`;
 
 
 
-modalBody.appendChild(addOnSettingsModalBody);
 
-options.$SETTING_TABS.push(addOnSettings);
-options.$SETTING_CONTAINERS.push(addOnSettingsModalBody);
+function createHoverFunction(target, handler) {
+	let hoveDelayTimeout;
+	target.hover(() => {
+		hoveDelayTimeout = setTimeout(() => {
+			handler(true);
+		}, 0);
+	}, () => {
+		clearTimeout(hoveDelayTimeout);
+		handler(false);
+	});
 }
 
-
-
+options.timeoutTime = 200;
 
 }
