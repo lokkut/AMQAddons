@@ -350,4 +350,40 @@ AmqAwesomeplete.prototype.evaluate = function()
 	_OldStuff.AwesomepleteEvaluate.call( this );	
 }
 
+
+if (document.getElementById("settingModal")) {
+let optionsModal = document.getElementById("settingModal");
+let tabs = optionsModal.children[0].children[0].children[1];
+let modalBody = optionsModal.children[0].children[0].children[2];
+
+let addOnSettings = document.createElement("div");
+addOnSettings.className = "tab leftRightButtonTop clickAble";
+addOnSettings.onclick = function() {
+	options.selectTab('settingsAmqAddon', this);
+};
+addOnSettings.innerHTML = "<h5>Add-on</h5>";
+
+tabs.appendChild(addOnSettings);
+
+let addOnSettingsModalBody = document.createElement("div");
+addOnSettingsModalBody.id = "settingsAmqAddon";
+addOnSettingsModalBody.className = "settingContentContainer hide";
+
+addOnSettingsModalBody.innerHTML = `<div class="row">
+<div class="col-xs-4 text-center">
+	add shit here
+</div>
+</div>`;
+
+
+
+modalBody.appendChild(addOnSettingsModalBody);
+
+options.$SETTING_TABS.push(addOnSettings);
+options.$SETTING_CONTAINERS.push(addOnSettingsModalBody);
+}
+
+
+
+
 }
