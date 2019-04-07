@@ -1,5 +1,6 @@
 // amq is magic
 if( typeof afkKicker !== 'undefined' ){
+let ExtensionId = "jlhjjajhlgnaljjmklmpcmojbemcahpp";
 
 // afk stuff
 afkKicker._AFK_TIMEOUT_TIME = 300 * 60 * 1000; // 5 hours : )
@@ -39,37 +40,130 @@ GameChat.prototype.convertTypeToText = function (type, typeNumber) {
 	}
 };
 
-GameChat.prototype.addHistory = function (currentcount, totalcount, animeNames, songName, artist, type, typeNumber, weRight ) {
-	let animeName = animeNames.romaji + " | " + animeNames.english;
-	if( animeNames.romaji == animeNames.english )
-	{
-		animeName = animeNames.romaji;
-	}
-	this.insertHistory( "" + currentcount + "/" + totalcount, this.convertTypeToText(type, typeNumber) + " 「" + animeName + "」 [" + songName + "] - " + artist, weRight );
-};
+let GameCount = 0;
+let CurrentGameHistory;
+let HistoryAnswers;
 
-GameChat.prototype.GameOver = function () {
-	this.insertHistory( "------------------------------", "", 2);
-};
+let HistoryQuizStartListener = new Listener("quiz ready", function () {
+	GameCount++;
+	let HistoryId = "aaHistoryTable" + GameCount;
+	let SongNameHover = $("#aaHistoryFloatSongName");
+	let ResultsHover = $("#aaHistoryFloater")[0];
+	let ResultsListHover = $("#aaHistoryFloatContainer");
+	let Players = Object.assign( {}, lobby.players );
 
-GameChat.prototype.insertHistory = function (count, msg, correct) {
-	let formattype = this.serverMsgTemplate;
-	if( correct == true )	{
-		formattype = this.correctAnswerTemplate;
-	}
-	else if( correct == false ){
-		formattype = this.incorrectAnswerTemplate;
-	}
-	let realmsg = format(formattype, count, msg);
+	$("#gcHistoryContainer").append( `<div id="` + HistoryId + `"></div>` );
+	CurrentGameHistory = new Tabulator("#" + HistoryId, {
+		layout: "fitColumns",		
+		resizableColumns: false,
+		columnMinWidth: 0,
+		columns:[
+			{title:"", field:"index", width:30,headerSort:false},
+			{title:"Type", field:"type", width:45,headerSort:false},
+			{title:"Romaji", field:"romaji", widthGrow:1, tooltips:true,headerSort:false},
+			{title:"English", field:"english", widthGrow:1,tooltips:true,headerSort:false},		
+			{title:"Song Name", field:"song_name", widthGrow:1,tooltips:true,headerSort:false},
+			{title:"Artist", field:"artist", widthGrow:1,tooltips:true,headerSort:false},
+		],
+		rowFormatter:function(row){
+			let data = row.getData(); //get data object for row
+	
+			if( data.romaji == data.english )
+				{
+				let Cells = row.getCells();
+				let Cell3 = Cells[2].getElement(); // woops
+				let Cell4 = Cells[3].getElement();
+				let Cell3W = Cell3.style.width;
+				let Cell4W = Cell4.style.width;
+				Cell4.style.padding = "0px";
+				let n = Number(Cell3W.substring(0,Cell3W.length - 2)) + Number(Cell4W.substring(0,Cell4W.length - 2));
+				Cell3.style.width = (n - 1) + "px";
+				Cell4.style.width = "0px";
+				}
 
+			let RowDiv = row.getElement(); //apply css change to row element
+			RowDiv.style['background-color'] = data.correct ? "#114408" : "#440000";			
+			RowDiv.style.color = "#d9d9d9";
+		},
+		tooltips:function(cell)
+		{
+			return cell.getValue();
+		},
+		rowMouseOver:function(e, row){
+			//e - the event object
+			//row - row component
+			let rect = row.getElement().getBoundingClientRect( );
+			ResultsHover.style.top = rect.top + "px";	
+			ResultsHover.style.visibility = "visible";
+			
+			ResultsListHover.children('li').remove();
+
+			let data = row.getData();
+
+			SongNameHover.text( data.song_name + " - " + data.artist );
+
+			let newrows = {};
+
+			data.answers.answers.forEach((answer) => {
+				let player = Players[answer.roomSlot];
+				if (player) {
+					newrows[player.name] = { answer: answer.answer };
+
+				}
+			});
+
+			data.results.players.forEach((playerResult) => {
+				let player = Players[playerResult.roomSlot];
+				if (player) {
+					newrows[player.name].correct = playerResult.correct;
+				}
+			});
+
+			for( let i in newrows )
+				{
+				let answer = newrows[i];
+				let li = document.createElement( "li" );
+				li.className = answer.correct ? 'CorrectAnswer' : 'IncorrectAnswer';
+				li.innerHTML = "<div>"+i+"</div><div class=\"historyanswer\">" + answer.answer + "</div>";
+				ResultsListHover.append( li );
+				}
+		},
+		rowMouseOut:function(e, row){
+			//e - the event object
+			//row - row component
+			ResultsHover.style.visibility = "hidden";
+		},
+	});
+});
+
+let HistoryQuizAnswerListener = new Listener("player answers", function (data) {
+	HistoryAnswers = data;
+});
+
+HistoryQuizStartListener.bindListener();
+HistoryQuizAnswerListener.bindListener();
+
+GameChat.prototype.addHistory = function (currentcount, totalcount, animeNames, songName, artist, type, typeNumber, weRight, allResults ) {
+	if( !CurrentGameHistory ) { return; }
 	let atBottom = this.$historyContainer.scrollTop() + this.$historyContainer.innerHeight() >= this.$historyContainer[0].scrollHeight - 10;
-	this.$historyContainer.append(realmsg);
-	if (atBottom) {
-		this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
-	}
-	this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update');
-};
 
+	CurrentGameHistory.addRow({
+		index:currentcount,
+		type:this.convertTypeToText(type, typeNumber),
+		romaji:animeNames.romaji,
+		english:animeNames.english,
+		song_name:songName,
+		artist: artist,
+		correct:weRight,
+		results:allResults,
+		answers:HistoryAnswers}).then((function(row){
+
+		if (atBottom) {
+			this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
+		}
+		this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
+	}).bind(this));
+};
 
 GameChat.prototype.viewHistory = function () {
 	this.resetView();
@@ -146,7 +240,6 @@ Quiz = function()
 		if( options.AutoReady && !lobby.isHost() ){
 			lobby.fireMainButtonEvent();
 		}
-		gameChat.GameOver();
     }.bind(this);
 
 	this.totalSongCount = '?';
@@ -166,7 +259,7 @@ Quiz = function()
             }
         });
         let songInfo = result.songInfo;
-        gameChat.addHistory( this.infoContainer.currentSongCount, this.infoContainer.totalSongCount, songInfo.animeNames, songInfo.songName, songInfo.artist, songInfo.type, songInfo.typeNumber, weRight );
+        gameChat.addHistory( this.infoContainer.currentSongCount, this.infoContainer.totalSongCount, songInfo.animeNames, songInfo.songName, songInfo.artist, songInfo.type, songInfo.typeNumber, weRight, result );
     }.bind(this);
 
     this.setup();
@@ -183,16 +276,42 @@ var quiz = new Quiz();
 
 $("#smAutoReady").on('click', () => {
     if( options.AutoReady ) {
-        options.AutoReady = true;
-    } else {
         options.AutoReady = false;
+    } else {
+        options.AutoReady = true;
     }
 });
 
 
 
 // awesomeplete
-let DefaultCustomAwesomepleteAcronyms = { ubw: 'Fate/stay night: Unlimited Blade Works' };
+let CustomAwesomepleteAcronyms = { 
+
+ };
+
+function MakeMessage( Topic, Data )
+{
+	return { Topic: Topic, Data: Data };
+}
+
+function UpdateAcronyms()
+{
+	chrome.runtime.sendMessage( ExtensionId, MakeMessage( "GetAcronyms" ), function(result)
+	{   
+		if(!result){return;}
+		
+		for( var i in result )
+			{
+			CustomAwesomepleteAcronyms[result[i].name.toLowerCase()] = result[i].full_name;
+			}
+	});
+}
+ 
+var UpdateAcronymsListener = new Listener("play next song", function () {
+	UpdateAcronyms();
+});
+
+UpdateAcronymsListener.bindListener();
 
 _OldStuff.AmqAwesomeplete = AmqAwesomeplete;
 _OldStuff.AwesomepleteEvaluate = AmqAwesomeplete.prototype.evaluate;
@@ -204,7 +323,7 @@ AmqAwesomeplete = function( input, o, scrollable )
 	o.filter = ( text, input ) => 
 	{
 		return o_f(text, input) || 
-			( this.acronym && RegExp(input.trim(), "i").test(this.acronym) && DefaultCustomAwesomepleteAcronyms[this.acronym] == text.label );
+			( this.acronym && RegExp(input.trim(), "i").test(this.acronym) && CustomAwesomepleteAcronyms[this.acronym] == text.label );
 	};
 
 	this.filter = o.filter;
@@ -214,13 +333,14 @@ AmqAwesomeplete.prototype = _OldStuff.AmqAwesomeplete.prototype;
 
 AmqAwesomeplete.prototype.evaluate = function()
 {
-	if( DefaultCustomAwesomepleteAcronyms[this.input.value] )
+	let Acronym = this.input.value.toLowerCase();
+	if( CustomAwesomepleteAcronyms[Acronym] )
 		{
-		if( !this.currentSubList.includes( DefaultCustomAwesomepleteAcronyms[this.input.value] ) )
+		if( !this.currentSubList.includes( CustomAwesomepleteAcronyms[Acronym] ) )
 			{
-			this.currentSubList.unshift( DefaultCustomAwesomepleteAcronyms[this.input.value] );
+			this.currentSubList.unshift( CustomAwesomepleteAcronyms[Acronym] );
 			}
-		this.acronym = this.input.value;
+		this.acronym = Acronym;
 		}
 	else	
 		{
