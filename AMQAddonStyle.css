@@ -134,6 +134,14 @@
 	text-shadow: 0 0 5px #fb1212
 }
 
+.English {
+	text-shadow: 0 0 5px #CCE1E9
+}
+
+.Japanese {
+	text-shadow: 0 0 5px #bab1f6
+}
+
 #optionsContainer.popOut {
 	transition: transform 0.2s ease-in-out;
 }
