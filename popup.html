@@ -4,6 +4,46 @@
         <script src="thirdParty/jquery-3.1.1.min.js" type="text/javascript"></script>
         <script src="thirdParty/tabulator.js" type="text/javascript"></script>
         <link href="thirdParty/tabulator.css" rel="stylesheet">
+        <style>
+            #AcronymTable.tabulator {
+                border: 1px solid #3b3b3b;
+                background-color: #1b1b1b;
+            }
+
+            #AcronymTable.tabulator .tabulator-header {
+                border-bottom: 1px solid #3b3b3b;
+                background-color: #1b1b1b;
+                color: #e6e6e6;
+            }
+
+            #AcronymTable.tabulator .tabulator-header .tabulator-col {
+                border-right: 1px solid #3b3b3b;
+                background:  #1b1b1b;
+            }
+
+            #AcronymTable.tabulator .tabulator-row-odd .tabulator-cell {
+                background: #3b3b3b;
+            }
+            #AcronymTable.tabulator .tabulator-row-even .tabulator-cell {
+                background: #1b1b1b;
+            }
+            
+            #AcronymTable.tabulator .tabulator-row .tabulator-cell {
+                border-right: 1px solid  #666;
+                color: #e6e6e6;
+            }
+
+            body {
+                background-color: #6d6d6d;
+            }
+
+            button {
+                color: #fff;
+                background-color: #3b3b3b;
+                border-color: #1b1b1b;
+                box-shadow: inset 0 0 20px 9px #3b3b3b;
+            }
+        </style>
     </head>
     <body>
         <!-- maybe later im tired
@@ -15,7 +55,7 @@
 
         </div>
         <button id="NewAcronymButton">
-                New Acronym
+            New Acronym
         </button>
         <button id="SaveAcronymButton">
             Save Acronyms
