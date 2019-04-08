@@ -347,6 +347,19 @@ if (typeof afkKicker !== 'undefined') {
 
 	var quiz = new Quiz();
 
+	$("#aaSetDefaultButton").on('click', () => {
+		let Settings = hostModal.getSettings();
+		if( Settings ) {
+			SetOption( "DefaultSettings", Settings );
+		}
+	});
+
+	GetOption("DefaultSettings", function (result) {
+		if (result) {
+			hostModal.DEFUALT_SETTINGS = result;
+		}
+	});
+
 	$("#smAutoReady").on('click', () => {
 		if (options.AutoReady) {
 			options.AutoReady = false;
