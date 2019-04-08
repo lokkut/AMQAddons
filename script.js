@@ -11,13 +11,25 @@ $(`<div id="gcHistoryContent" class="">
     <ul id="gcHistoryContainer" style="overflow-y:scroll;height:100%;" class="gcList">
     </ul>
     <div id="aaHistoryFloater" class="floatingContainer" style="visibility:hidden">
-        <div id="aaHistoryFloatSongName" class="row">
-            Song Name
+        <h3>Anime Name</h3>
+        <div id="aaHistoryFloatAnimeName" class="row">
+            <span id="aaHistoryFloatAnimeNameInner">
+                Anime Name
+            </span>
         </div>
+        <h3>Song Name</h3>
+        <div id="aaHistoryFloatSongName" class="row">
+            <span id="aaHistoryFloatSongNameInner">
+                Song Name
+            </span>
+        </div>
+        <h3>Guesses</h3>
         <ul id="aaHistoryFloatContainer">
         </ul>
     </div>
 </div>`).insertAfter( "#gcQueueListContent" );
+
+
 
 let CssPath = chrome.runtime.getURL( "AMQAddonStyle.css" );
 let TabulatorCssPath = chrome.runtime.getURL( "thirdParty/tabulator.css" );

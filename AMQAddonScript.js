@@ -69,6 +69,9 @@ if (typeof afkKicker !== 'undefined') {
 		GameCount++;
 		let HistoryId = "aaHistoryTable" + GameCount;
 		let SongNameHover = $("#aaHistoryFloatSongName");
+		let AnimeNameHover = $("#aaHistoryFloatAnimeName");
+		let SongNameHoverInner = $("#aaHistoryFloatSongNameInner");
+		let AnimeNameHoverInner = $("#aaHistoryFloatAnimeNameInner");
 		let ResultsHover = $("#aaHistoryFloater")[0];
 		let ResultsListHover = $("#aaHistoryFloatContainer");
 		let Players = Object.assign({}, lobby.players);
@@ -127,7 +130,11 @@ if (typeof afkKicker !== 'undefined') {
 					return;
 				}
 
-				SongNameHover.text(data.song_name + " - " + data.artist);
+				SongNameHoverInner.text(data.song_name + " - " + data.artist);
+				AnimeNameHoverInner.html( GetAnimeNameHtml( {romaji:data.romaji,english:data.english} ) );
+				fitTextToContainer(SongNameHoverInner, SongNameHover, 15, 11);
+				fitTextToContainer(AnimeNameHoverInner, AnimeNameHover, 15, 11 );
+
 
 				data.answers.answers.forEach((answer) => {
 					let player = Players[answer.roomSlot];
@@ -232,10 +239,9 @@ if (typeof afkKicker !== 'undefined') {
 
 	// QuizInfoContainer stuff
 
-	// _OldStuff.showInfo = QuizInfoContainer.prototype.showInfo;
-	QuizInfoContainer.prototype.showInfo = function (animeNames, songName, artist, type, typeNumber, urls) {
-
-		let animeName
+	function GetAnimeNameHtml(animeNames)
+	{
+		let animeName;
 
 		if (options.showBothNames) {
 			animeName = '<span class="Japanese">' + animeNames.romaji + '</span><br><span class="English">' + animeNames.english + "</span>";
@@ -245,6 +251,14 @@ if (typeof afkKicker !== 'undefined') {
 		} else {
 			animeName = options.useRomajiNames === 1 ? animeNames.romaji : animeNames.english;
 		}
+
+		return animeName;
+	}
+
+	// _OldStuff.showInfo = QuizInfoContainer.prototype.showInfo;
+	QuizInfoContainer.prototype.showInfo = function (animeNames, songName, artist, type, typeNumber, urls) {
+
+		let animeName = GetAnimeNameHtml(animeNames);
 
 		this.$name.html(animeName);
 		fitTextToContainer(this.$name, this.$nameContainer, 25, 11);
@@ -267,6 +281,22 @@ if (typeof afkKicker !== 'undefined') {
 		this.totalSongCount = count;
 	};
 
+	function DoAutoReady() {
+		if (options.AutoReady && !lobby.isHost()) {
+			lobby.fireMainButtonEvent();
+		}
+	}
+
+	let RoomSettingListener = new Listener("Room Settings Changed", DoAutoReady );
+	let QuizOverListener = new Listener("quiz over", function() {
+		if(Options.AutoReadyOnSettingChange) {
+			DoAutoReady();
+		} 
+	});
+
+	RoomSettingListener.bindListener();
+	QuizOverListener.bindListener();
+
 	// Quiz stuff
 	let _OldQuiz = Quiz;
 
@@ -284,13 +314,11 @@ if (typeof afkKicker !== 'undefined') {
 			WAITING_ANSWERS_PHASE: 8
 		};
 
-		let OldQuizOver = this._quizOverListner.callback;
+		/*let OldQuizOver = this._quizOverListner.callback;
 		this._quizOverListner.callback = function (roomSettings) {
 			OldQuizOver.call(this, roomSettings);
-			if (options.AutoReady && !lobby.isHost()) {
-				lobby.fireMainButtonEvent();
-			}
-		}.bind(this);
+			
+		}.bind(this);*/
 
 		this.totalSongCount = '?';
 		this.currentSongCount = '?';
@@ -332,22 +360,21 @@ if (typeof afkKicker !== 'undefined') {
 		SetOption( "AutoReady", options.AutoReady );
 	});
 
-
-	GetOption("AutoReady", function (result) {
-		if (result) {
-			options.AutoReady = true;
-			$("#smAutoReady").prop('checked', true);
+	function DefaultCheckBox( SettingName, CheckBoxId, OptionsName ) {
+		if( !OptionsName ) {
+			OptionsName = SettingName;
 		}
-	});
+		GetOption(SettingName, function (result) {
+			if (result) {
+				options[OptionsName] = true;
+				$(CheckBoxId).prop('checked', true);
+			}
+		});
+	}
 
-	GetOption("BothNames", function (result) {
-		if (result) {
-			options.AutoReady = true;
-			$("#smShowBoth").prop('checked', true);
-		}
-	});
-
-
+	DefaultCheckBox( "AutoReady", "#smAutoReady" );	
+	DefaultCheckBox( "BothNames", "#smShowBoth", "showBothNames" );
+	
 	// awesomeplete
 	let CustomAwesomepleteAcronyms = {
 
@@ -404,37 +431,37 @@ if (typeof afkKicker !== 'undefined') {
 
 
 
-if (document.getElementById("settingModal")) {
-	let optionsModal = document.getElementById("settingModal");
-	let tabs = optionsModal.children[0].children[0].children[1];
-	let modalBody = optionsModal.children[0].children[0].children[2];
+	if (document.getElementById("settingModal")) {
+		let optionsModal = document.getElementById("settingModal");
+		let tabs = optionsModal.children[0].children[0].children[1];
+		let modalBody = optionsModal.children[0].children[0].children[2];
 
-	let addOnSettings = document.createElement("div");
-	addOnSettings.className = "tab leftRightButtonTop clickAble";
-	addOnSettings.onclick = function() {
-		options.selectTab('settingsAmqAddon', this);
-	};
-	addOnSettings.innerHTML = "<h5>Add-on</h5>";
+		let addOnSettings = document.createElement("div");
+		addOnSettings.className = "tab leftRightButtonTop clickAble";
+		addOnSettings.onclick = function() {
+			options.selectTab('settingsAmqAddon', this);
+		};
+		addOnSettings.innerHTML = "<h5>Add-on</h5>";
 
-	tabs.appendChild(addOnSettings);
+		tabs.appendChild(addOnSettings);
 
-	let addOnSettingsModalBody = document.createElement("div");
-	addOnSettingsModalBody.id = "settingsAmqAddon";
-	addOnSettingsModalBody.className = "settingContentContainer hide";
+		let addOnSettingsModalBody = document.createElement("div");
+		addOnSettingsModalBody.id = "settingsAmqAddon";
+		addOnSettingsModalBody.className = "settingContentContainer hide";
 
 		addOnSettingsModalBody.innerHTML = `<div class="row">
-<div class="col-xs-4 text-center">
-	<div>
-		<label data-toggle="popover"
-			data-content="Shows both the romanji and english name if availible"
-			data-trigger="hover" data-html="true" data-placement="top" data-container="#settingModal"
-			data-original-title="" title="">Show both names</label>
+	<div class="col-xs-4 text-center">
+		<div>
+			<label data-toggle="popover"
+				data-content="Shows both the romanji and english name if availible"
+				data-trigger="hover" data-html="true" data-placement="top" data-container="#settingModal"
+				data-original-title="" title="">Show both names</label>
+		</div>
+		<div class="customCheckbox">
+			<input type="checkbox" id="smShowBoth" onclick="toggleBothNames()">
+			<label for="smShowBoth">✔</label>
+		</div>
 	</div>
-	<div class="customCheckbox">
-		<input type="checkbox" id="smShowBoth" onclick="toggleBothNames()">
-		<label for="smShowBoth">✔</label>
-	</div>
-</div>
 </div>`;
 
 		modalBody.appendChild(addOnSettingsModalBody);

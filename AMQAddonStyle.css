@@ -94,19 +94,36 @@
 	top: 0%;
 }
 
-#aaHistoryFloatSongName{
+#aaHistoryFloater h3{
 	position:relative;	
-	left:5%;
-	width:98%;
-	text-align: center;	
-	white-space: nowrap; 
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: 0px;
+	font-size: 20px;
+}
+
+#aaHistoryFloatAnimeName{
+	position:relative;	
+	margin-left:10px;
+	height:40px;
+	width:90%;
+	text-align: left;	
 	overflow: hidden;
 	text-overflow: ellipsis;
-	font-size: 22px;	
+}
+
+#aaHistoryFloatSongName{
+	position:relative;	
+	margin-left:10px;
+	height:40px;
+	width:90%;
+	text-align: left;	
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 #aaHistoryFloatContainer li{
-	margin-left: 4%;
+	margin-left: 10px;
 	width: 92%;
 	font-size: 15px;
 }
@@ -122,10 +139,10 @@
 
 #aaHistoryFloatContainer li .historyanswer {
 	left: 30%;
+	text-align: right;	
 	padding-left: 10px;
 	width: 70%;
 }
-
 .CorrectAnswer .historyanswer {
 	text-shadow: 0px 0px 5px #B6FF00
 }
