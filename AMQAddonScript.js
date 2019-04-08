@@ -1,14 +1,11 @@
 // amq is magic
 if (typeof afkKicker !== 'undefined') {
-	function MakeMessage( Topic, Data )
-	{
+	function MakeMessage(Topic, Data) {
 		return { Topic: Topic, Data: Data };
 	}
 
-	function SendMessage( Topic, Data, Callback )
-	{
-		chrome.runtime.sendMessage( AMQAddonExtensionId, MakeMessage( Topic, Data ), function(result)
-		{   
+	function SendMessage(Topic, Data, Callback) {
+		chrome.runtime.sendMessage(AMQAddonExtensionId, MakeMessage(Topic, Data), function (result) {
 			Callback(result);
 		});
 	}
@@ -122,18 +119,18 @@ if (typeof afkKicker !== 'undefined') {
 
 				ResultsListHover.children('li').remove();
 
-				let data = row.getData();		
+				let data = row.getData();
 
 				let newrows = {};
 
-				if( !data.answers ) {
+				if (!data.answers) {
 					return;
 				}
 
 				SongNameHoverInner.text(data.song_name + " - " + data.artist);
-				AnimeNameHoverInner.html( GetAnimeNameHtml( {romaji:data.romaji,english:data.english} ) );
+				AnimeNameHoverInner.html(GetAnimeNameHtml({ romaji: data.romaji, english: data.english }));
 				fitTextToContainer(SongNameHoverInner, SongNameHover, 15, 11);
-				fitTextToContainer(AnimeNameHoverInner, AnimeNameHover, 15, 11 );
+				fitTextToContainer(AnimeNameHoverInner, AnimeNameHover, 15, 11);
 
 
 				data.answers.answers.forEach((answer) => {
@@ -156,15 +153,15 @@ if (typeof afkKicker !== 'undefined') {
 					let li = document.createElement("li");
 					li.className = answer.correct ? 'CorrectAnswer' : 'IncorrectAnswer';
 					let textAnswer = '...';
-					if( answer.answer ) {
-						textAnswer = answer.answer;						
-					}	
+					if (answer.answer) {
+						textAnswer = answer.answer;
+					}
 
 					li.innerHTML = "<div>" + i + "</div><div class=\"historyanswer\">" + textAnswer + "</div>";
-					ResultsListHover.append(li);				
+					ResultsListHover.append(li);
 				}
 				let rect2 = ResultsListHover[0].getBoundingClientRect();
-				if( rect2.bottom > window.innerHeight - 100 ) {
+				if (rect2.bottom > window.innerHeight - 100) {
 					ResultsHover.style.top = (rect.top - (rect2.bottom - window.innerHeight + 100)) + "px";
 				}
 			},
@@ -173,7 +170,7 @@ if (typeof afkKicker !== 'undefined') {
 				//row - row component
 				ResultsHover.style.visibility = "hidden";
 			},
-			tableBuilt: function() {
+			tableBuilt: function () {
 				if (atBottom) {
 					HistoryContainer.scrollTop(HistoryContainer.prop("scrollHeight"));
 				}
@@ -208,13 +205,13 @@ if (typeof afkKicker !== 'undefined') {
 				this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
 			}
 			this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
-		}).bind(this)).then(function(){CurrentGameHistory.redraw();});
+		}).bind(this)).then(function () { CurrentGameHistory.redraw(); });
 	};
 
 	function FakeHistory() {
 		HistoryQuizStartListener.callback();
-		for( let i = 1; i <= 30; i++ ) {
-			CurrentGameHistory.addRow( { index: i, type: 'fake' } );
+		for (let i = 1; i <= 30; i++) {
+			CurrentGameHistory.addRow({ index: i, type: 'fake' });
 		}
 	}
 
@@ -239,8 +236,7 @@ if (typeof afkKicker !== 'undefined') {
 
 	// QuizInfoContainer stuff
 
-	function GetAnimeNameHtml(animeNames)
-	{
+	function GetAnimeNameHtml(animeNames) {
 		let animeName;
 
 		if (options.showBothNames) {
@@ -287,11 +283,11 @@ if (typeof afkKicker !== 'undefined') {
 		}
 	}
 
-	let RoomSettingListener = new Listener("Room Settings Changed", DoAutoReady );
-	let QuizOverListener = new Listener("quiz over", function() {
-		if(Options.AutoReadyOnSettingChange) {
+	let RoomSettingListener = new Listener("Room Settings Changed", DoAutoReady);
+	let QuizOverListener = new Listener("quiz over", function () {
+		if (Options.AutoReadyOnSettingChange) {
 			DoAutoReady();
-		} 
+		}
 	});
 
 	RoomSettingListener.bindListener();
@@ -352,16 +348,16 @@ if (typeof afkKicker !== 'undefined') {
 	var quiz = new Quiz();
 
 	$("#smAutoReady").on('click', () => {
-		if( options.AutoReady ) {
+		if (options.AutoReady) {
 			options.AutoReady = false;
 		} else {
 			options.AutoReady = true;
 		}
-		SetOption( "AutoReady", options.AutoReady );
+		SetOption("AutoReady", options.AutoReady);
 	});
 
-	function DefaultCheckBox( SettingName, CheckBoxId, OptionsName ) {
-		if( !OptionsName ) {
+	function DefaultCheckBox(SettingName, CheckBoxId, OptionsName) {
+		if (!OptionsName) {
 			OptionsName = SettingName;
 		}
 		GetOption(SettingName, function (result) {
@@ -372,9 +368,9 @@ if (typeof afkKicker !== 'undefined') {
 		});
 	}
 
-	DefaultCheckBox( "AutoReady", "#smAutoReady" );	
-	DefaultCheckBox( "BothNames", "#smShowBoth", "showBothNames" );
-	
+	DefaultCheckBox("AutoReady", "#smAutoReady");
+	DefaultCheckBox("BothNames", "#smShowBoth", "showBothNames");
+
 	// awesomeplete
 	let CustomAwesomepleteAcronyms = {
 
@@ -383,10 +379,10 @@ if (typeof afkKicker !== 'undefined') {
 
 
 	function UpdateAcronyms() {
-		chrome.runtime.sendMessage( AMQAddonExtensionId, MakeMessage( "GetAcronyms" ), function(result) {
-			if(!result){return;}
+		chrome.runtime.sendMessage(AMQAddonExtensionId, MakeMessage("GetAcronyms"), function (result) {
+			if (!result) { return; }
 
-			for( let i in result ) {
+			for (let i in result) {
 				CustomAwesomepleteAcronyms[result[i].name.toLowerCase()] = result[i].full_name;
 			}
 		});
@@ -431,44 +427,54 @@ if (typeof afkKicker !== 'undefined') {
 
 
 
-	if (document.getElementById("settingModal")) {
-		let optionsModal = document.getElementById("settingModal");
-		let tabs = optionsModal.children[0].children[0].children[1];
-		let modalBody = optionsModal.children[0].children[0].children[2];
 
+	function addSettings() {
+		console.log("test");
+		let tabs = $('#settingModal > .modal-dialog > .modal-content > .tabContainer')[0];
+		let modalBody = $('#settingModal > .modal-dialog > .modal-content > .modal-body')[0];
 		let addOnSettings = document.createElement("div");
 		addOnSettings.className = "tab leftRightButtonTop clickAble";
-		addOnSettings.onclick = function() {
+		addOnSettings.onclick = function () {
 			options.selectTab('settingsAmqAddon', this);
 		};
 		addOnSettings.innerHTML = "<h5>Add-on</h5>";
-
 		tabs.appendChild(addOnSettings);
-
 		let addOnSettingsModalBody = document.createElement("div");
 		addOnSettingsModalBody.id = "settingsAmqAddon";
 		addOnSettingsModalBody.className = "settingContentContainer hide";
 
-		addOnSettingsModalBody.innerHTML = `<div class="row">
-	<div class="col-xs-4 text-center">
-		<div>
-			<label data-toggle="popover"
-				data-content="Shows both the romanji and english name if availible"
-				data-trigger="hover" data-html="true" data-placement="top" data-container="#settingModal"
-				data-original-title="" title="">Show both names</label>
-		</div>
-		<div class="customCheckbox">
-			<input type="checkbox" id="smShowBoth" onclick="toggleBothNames()">
-			<label for="smShowBoth">✔</label>
-		</div>
-	</div>
-</div>`;
+		addOnSettingsModalBody.innerHTML = `
+			<div> 
+				<div class="row">
+					<div class="col-xs-4 text-center" id="showBothDiv">
+						<div>
+							<label data-toggle="popover"
+								data-content="Shows both the romanji and english name if availible"
+								data-trigger="hover" data-html="true" data-placement="top" data-container="#settingModal"
+								data-original-title="" title="">Show both names
+							</label>
+						</div>
+						<div class="customCheckbox">
+							<input type="checkbox" id="smShowBoth" onclick="toggleBothNames()">
+							<label for="smShowBoth">✔</label>
+						</div>
+					</div>
+					<div class="col-xs-4 text-center" id="newOption">
+						<div> 
+						
+						</div>
+					</div>
+				</div> 
+			</div>`;
 
 		modalBody.appendChild(addOnSettingsModalBody);
 
 		options.$SETTING_TABS.push(addOnSettings);
 		options.$SETTING_CONTAINERS.push(addOnSettingsModalBody);
+
 	}
+
+	addSettings();
 
 	toggleBothNames = function () {
 		if (options.showBothNames) {
@@ -476,6 +482,6 @@ if (typeof afkKicker !== 'undefined') {
 		} else {
 			options.showBothNames = true;
 		}
-		SetOption( "BothNames", options.showBothNames );
+		SetOption("BothNames", options.showBothNames);
 	}
 }
