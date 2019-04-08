@@ -5,9 +5,10 @@ if (typeof afkKicker !== 'undefined') {
 		return { Topic: Topic, Data: Data };
 	}
 
-	function SendMessage(Topic, Data, Callback) {
-		chrome.runtime.sendMessage(ExtensionId, MakeMessage(Topic, Data), function (result) {
-			if (!result) { return; }
+	function SendMessage( Topic, Data, Callback )
+	{
+		chrome.runtime.sendMessage( AMQAddonExtensionId, MakeMessage( Topic, Data ), function(result)
+		{   
 			Callback(result);
 		});
 	}
@@ -71,6 +72,8 @@ if (typeof afkKicker !== 'undefined') {
 		let ResultsHover = $("#aaHistoryFloater")[0];
 		let ResultsListHover = $("#aaHistoryFloatContainer");
 		let Players = Object.assign({}, lobby.players);
+		let HistoryContainer = $("#gcHistoryContainer");
+		let atBottom = HistoryContainer.scrollTop() + HistoryContainer.innerHeight() >= HistoryContainer.scrollHeight - 10;
 
 		$("#gcHistoryContainer").append(`<div id="` + HistoryId + `"></div>`);
 		CurrentGameHistory = new Tabulator("#" + HistoryId, {
@@ -116,11 +119,15 @@ if (typeof afkKicker !== 'undefined') {
 
 				ResultsListHover.children('li').remove();
 
-				let data = row.getData();
-
-				SongNameHover.text(data.song_name + " - " + data.artist);
+				let data = row.getData();		
 
 				let newrows = {};
+
+				if( !data.answers ) {
+					return;
+				}
+
+				SongNameHover.text(data.song_name + " - " + data.artist);
 
 				data.answers.answers.forEach((answer) => {
 					let player = Players[answer.roomSlot];
@@ -141,8 +148,17 @@ if (typeof afkKicker !== 'undefined') {
 					let answer = newrows[i];
 					let li = document.createElement("li");
 					li.className = answer.correct ? 'CorrectAnswer' : 'IncorrectAnswer';
-					li.innerHTML = "<div>" + i + "</div><div class=\"historyanswer\">" + answer.answer + "</div>";
-					ResultsListHover.append(li);
+					let textAnswer = '...';
+					if( answer.answer ) {
+						textAnswer = answer.answer;						
+					}	
+
+					li.innerHTML = "<div>" + i + "</div><div class=\"historyanswer\">" + textAnswer + "</div>";
+					ResultsListHover.append(li);				
+				}
+				let rect2 = ResultsListHover[0].getBoundingClientRect();
+				if( rect2.bottom > window.innerHeight - 100 ) {
+					ResultsHover.style.top = (rect.top - (rect2.bottom - window.innerHeight + 100)) + "px";
 				}
 			},
 			rowMouseOut: function (e, row) {
@@ -150,6 +166,11 @@ if (typeof afkKicker !== 'undefined') {
 				//row - row component
 				ResultsHover.style.visibility = "hidden";
 			},
+			tableBuilt: function() {
+				if (atBottom) {
+					HistoryContainer.scrollTop(HistoryContainer.prop("scrollHeight"));
+				}
+			}
 		});
 	});
 
@@ -180,8 +201,15 @@ if (typeof afkKicker !== 'undefined') {
 				this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
 			}
 			this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
-		}).bind(this));
+		}).bind(this)).then(function(){CurrentGameHistory.redraw();});
 	};
+
+	function FakeHistory() {
+		HistoryQuizStartListener.callback();
+		for( let i = 1; i <= 30; i++ ) {
+			CurrentGameHistory.addRow( { index: i, type: 'fake' } );
+		}
+	}
 
 	GameChat.prototype.viewHistory = function () {
 		this.resetView();
@@ -295,14 +323,14 @@ if (typeof afkKicker !== 'undefined') {
 
 	var quiz = new Quiz();
 
-$("#smAutoReady").on('click', () => {
-    if( options.AutoReady ) {
-        options.AutoReady = false;
-    } else {
-        options.AutoReady = true;
-	}
-	SetOption( "AutoReady", options.AutoReady );
-});
+	$("#smAutoReady").on('click', () => {
+		if( options.AutoReady ) {
+			options.AutoReady = false;
+		} else {
+			options.AutoReady = true;
+		}
+		SetOption( "AutoReady", options.AutoReady );
+	});
 
 
 	GetOption("AutoReady", function (result) {
@@ -327,15 +355,12 @@ $("#smAutoReady").on('click', () => {
 
 
 
-function UpdateAcronyms()
-{
-	chrome.runtime.sendMessage( ExtensionId, MakeMessage( "GetAcronyms" ), function(result)
-	{
-		if(!result){return;}
+	function UpdateAcronyms() {
+		chrome.runtime.sendMessage( AMQAddonExtensionId, MakeMessage( "GetAcronyms" ), function(result) {
+			if(!result){return;}
 
-		for( let i in result )
-			{
-			CustomAwesomepleteAcronyms[result[i].name.toLowerCase()] = result[i].full_name;
+			for( let i in result ) {
+				CustomAwesomepleteAcronyms[result[i].name.toLowerCase()] = result[i].full_name;
 			}
 		});
 	}
