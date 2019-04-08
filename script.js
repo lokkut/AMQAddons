@@ -56,6 +56,7 @@ Main.append("<!--AMQ Addons-->");
 let AMQScriptAddon = document.createElement( "script" );
 AMQScriptAddon.type = "text/javascript";
 AMQScriptAddon.src = ScriptPath;
+Main.append(`<script type="text/javascript">var AMQAddonExtensionId = "` + chrome.runtime.id + `";</script>;`);
 Main.append( AMQScriptAddon );
 
 let Head = $("Head");

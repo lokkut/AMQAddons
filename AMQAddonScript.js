@@ -1,8 +1,7 @@
 // amq is magic
 if (typeof afkKicker !== 'undefined') {
-	let ExtensionId = "ndebaoameaomodgnjfijcmbjjbkbemjn";
-
-	function MakeMessage(Topic, Data) {
+	function MakeMessage( Topic, Data )
+	{
 		return { Topic: Topic, Data: Data };
 	}
 
