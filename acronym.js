@@ -17,8 +17,6 @@ var UpdateAcronymsListener = new Listener("play next song", function () {
 	UpdateAcronyms();
 });
 
-UpdateAcronymsListener.bindListener();
-
 _OldAmqAwesomeplete = AmqAwesomeplete;
 _OldAwesomepleteEvaluate = AmqAwesomeplete.prototype.evaluate;
 

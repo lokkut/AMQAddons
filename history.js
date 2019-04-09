@@ -153,7 +153,3 @@ function FakeHistory() {
 		CurrentGameHistory.addRow({ index: i, type: 'fake' });
 	}
 }
-
-HistorySpectateGameListener.bindListener();
-HistoryQuizStartListener.bindListener();
-HistoryQuizAnswerListener.bindListener();
