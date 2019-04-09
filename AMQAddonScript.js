@@ -542,6 +542,13 @@ if (typeof afkKicker !== 'undefined') {
 		j = $(j);
 		if( j.length ) {
 			j[0].style.backgroundImage = i;
+			if( i.length ) {
+				j[0].style.backgroundStyle = 'cover';
+				j[0].style.backgroundPosition = 'center';
+			} else {
+				j[0].style.backgroundStyle = '';
+				j[0].style.backgroundPosition = '';
+			}
 		}
 	}
 
