@@ -3,24 +3,9 @@ function ToggleList()
     chrome.runtime.sendMessage(null, { topic: "ToggleList" });
 }
 
-function MakeMessage(Topic, Data) {
-    return { Topic: Topic, Data: Data };
-}
-
-function SendMessage(Topic, Data, Callback) {
-    chrome.runtime.sendMessage( MakeMessage(Topic, Data), function (result) {
-        if( Callback ) {
-            Callback(result);
-        }
-    });
-}
-
-function GetOption(Key, Callback) {
-    SendMessage("GetOption", Key, Callback);
-}
-
-function SetOption(Key, Value) {
-    SendMessage("SetOption", { Key: Key, Value: Value });
+function ChromeSendMessage( x, y )
+{
+    chrome.runtime.sendMessage( x, y );
 }
 
 var AcronymTable = new Tabulator("#AcronymTable", {

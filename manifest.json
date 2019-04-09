@@ -12,6 +12,12 @@
     "AMQAddonScript.js",
     "AMQAddonStyle.css",
     "thirdParty/tabulator.js",
+    "settings.js",
+    "acronym.js",
+    "history.js",
+    "AMQAddonScript.js",
+    "extComms.js",
+    "thirdParty/tabulator.js",
     "thirdParty/tabulator.css"
     ],
     "externally_connectable": {
@@ -22,7 +28,7 @@
         "matches": [
         "https://animemusicquiz.com/*"
         ],
-        "js": ["thirdParty/jquery-3.1.1.min.js", "script.js"]
+        "js": ["thirdParty/jquery-3.1.1.min.js", "domModifier.js"]
     }
     ],
     "browser_action": { 
