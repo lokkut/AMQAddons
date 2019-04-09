@@ -123,7 +123,7 @@
 }
 
 #aaHistoryFloatContainer li{
-	margin-left: 10px;
+	margin-left: 20px;
 	width: 92%;
 	font-size: 15px;
 }
@@ -144,21 +144,33 @@
 	width: 70%;
 }
 .CorrectAnswer .historyanswer {
-	text-shadow: 0px 0px 5px #B6FF00
+	text-shadow: 0px 0px 5px #B6FF00;
 }
 
 .IncorrectAnswer .historyanswer {
-	text-shadow: 0 0 5px #fb1212
+	text-shadow: 0 0 5px #fb1212;
 }
 
 .English {
-	text-shadow: 0 0 5px #CCE1E9
+	text-shadow: 0 0 5px #aCE1E9;
 }
 
 .Japanese {
-	text-shadow: 0 0 5px #bab1f6
+	text-shadow: 0 0 5px #8ab1f6;
 }
 
 #optionsContainer.popOut {
 	transition: transform 0.2s ease-in-out;
+}
+
+#aaHistoryFloatContainer li div.InMal {	
+	position: absolute;
+	left: 10px;
+	width: 8px;
+	transform: translateY(7px);
+	height: 8px;
+	background-color: #8ab1f6;
+	opacity: 0.8;
+	-webkit-box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.89);
+	box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.89);
 }

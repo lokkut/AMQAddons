@@ -6,7 +6,9 @@ if (typeof afkKicker !== 'undefined') {
 
 	function SendMessage(Topic, Data, Callback) {
 		chrome.runtime.sendMessage(AMQAddonExtensionId, MakeMessage(Topic, Data), function (result) {
-			Callback(result);
+			if( Callback ) {
+				Callback(result);
+			}
 		});
 	}
 
@@ -62,7 +64,9 @@ if (typeof afkKicker !== 'undefined') {
 	let CurrentGameHistory;
 	let HistoryAnswers;
 
-	let HistoryQuizStartListener = new Listener("quiz ready", function () {
+	let HistoryTables = [];
+
+	let NewHistoryTable = function (players) {
 		GameCount++;
 		let HistoryId = "aaHistoryTable" + GameCount;
 		let SongNameHover = $("#aaHistoryFloatSongName");
@@ -71,7 +75,7 @@ if (typeof afkKicker !== 'undefined') {
 		let AnimeNameHoverInner = $("#aaHistoryFloatAnimeNameInner");
 		let ResultsHover = $("#aaHistoryFloater")[0];
 		let ResultsListHover = $("#aaHistoryFloatContainer");
-		let Players = Object.assign({}, lobby.players);
+		let Players = Object.assign({}, players);
 		let HistoryContainer = $("#gcHistoryContainer");
 		let atBottom = HistoryContainer.scrollTop() + HistoryContainer.innerHeight() >= HistoryContainer.scrollHeight - 10;
 
@@ -143,8 +147,9 @@ if (typeof afkKicker !== 'undefined') {
 
 				data.results.players.forEach((playerResult) => {
 					let player = Players[playerResult.roomSlot];
-					if (player) {
+					if (player && newrows[player.name]) {
 						newrows[player.name].correct = playerResult.correct;
+						newrows[player.name].inMal = playerResult.inMal;
 					}
 				});
 
@@ -156,8 +161,11 @@ if (typeof afkKicker !== 'undefined') {
 					if (answer.answer) {
 						textAnswer = answer.answer;
 					}
-
-					li.innerHTML = "<div>" + i + "</div><div class=\"historyanswer\">" + textAnswer + "</div>";
+					let userhtml = '';
+					if( answer.inMal ) {
+						userhtml = '<div class="InMal"></div>';
+					}
+					li.innerHTML = userhtml + '<div>' + i + "</div><div class=\"historyanswer\">" + textAnswer + "</div>";
 					ResultsListHover.append(li);
 				}
 				let rect2 = ResultsListHover[0].getBoundingClientRect();
@@ -174,14 +182,33 @@ if (typeof afkKicker !== 'undefined') {
 				if (atBottom) {
 					HistoryContainer.scrollTop(HistoryContainer.prop("scrollHeight"));
 				}
+				if( CurrentGameHistory ) {
+					CurrentGameHistory.redraw();
+				}
 			}
 		});
+		HistoryTables.push(CurrentGameHistory);
+	};
+
+	let HistorySpectateGameListener = new Listener("Spectate Game", function(payload) {
+		let Players = {};
+		if( payload ) {
+			for( let i in payload.quizState.players ) {
+				Players[Number(payload.quizState.players[i].roomSlot)] = { name : payload.quizState.players[i].name };
+			}
+			NewHistoryTable( Players );
+		}
 	});
+	let HistoryQuizStartListener = new Listener("quiz ready", function()
+	{
+		NewHistoryTable( lobby.players );
+	} );
 
 	let HistoryQuizAnswerListener = new Listener("player answers", function (data) {
 		HistoryAnswers = data;
 	});
 
+	HistorySpectateGameListener.bindListener();
 	HistoryQuizStartListener.bindListener();
 	HistoryQuizAnswerListener.bindListener();
 
@@ -205,7 +232,12 @@ if (typeof afkKicker !== 'undefined') {
 				this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
 			}
 			this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
-		}).bind(this)).then(function () { CurrentGameHistory.redraw(); });
+		}).bind(this)).then((function () {
+			
+			if( this.$historyButton.hasClass('selected') ) {
+				CurrentGameHistory.redraw(); 
+			}
+		}).bind(this));
 	};
 
 	function FakeHistory() {
@@ -223,6 +255,8 @@ if (typeof afkKicker !== 'undefined') {
 		this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update');
 		this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
 		this.currentTab = this._TABS.HISTORY;
+
+		HistoryTables.forEach(function(a){a.redraw();})
 	};
 
 	_OldStuff.resetView = GameChat.prototype.resetView;
@@ -283,9 +317,9 @@ if (typeof afkKicker !== 'undefined') {
 		}
 	}
 
-	let RoomSettingListener = new Listener("Room Settings Changed", DoAutoReady);
-	let QuizOverListener = new Listener("quiz over", function () {
-		if (Options.AutoReadyOnSettingChange) {
+	let QuizOverListener = new Listener("quiz over", DoAutoReady);
+	let RoomSettingListener = new Listener("Room Settings Changed", function () {
+		if (options.AutoReadyOnSettingChange) {
 			DoAutoReady();
 		}
 	});
@@ -389,6 +423,11 @@ if (typeof afkKicker !== 'undefined') {
 
 	};
 
+	function LogSocket() {
+		socket._socket.on("command", function(payload) {
+			console.log( payload.command );
+		});
+	}
 
 
 	function UpdateAcronyms() {
@@ -442,7 +481,6 @@ if (typeof afkKicker !== 'undefined') {
 
 
 	function addSettings() {
-		console.log("test");
 		let tabs = $('#settingModal > .modal-dialog > .modal-content > .tabContainer')[0];
 		let modalBody = $('#settingModal > .modal-dialog > .modal-content > .modal-body')[0];
 		let addOnSettings = document.createElement("div");
@@ -497,4 +535,42 @@ if (typeof afkKicker !== 'undefined') {
 		}
 		SetOption("BothNames", options.showBothNames);
 	}
+
+	let AddOnListeners = {};
+
+	function SetBackgroundImage( j, i ) {
+		j = $('#'+j);
+		if( j.length ) {
+			j[0].style.backgroundImage = i;
+			console.log( j[0].style.backgroundImage );
+		}
+	}
+
+	function ReloadBackground() {
+		GetOption("BackgroundPath", function(result) {
+			let val = '';
+			if( result ) {
+				val = 'url(' + result + ')';
+				
+			} 
+			
+			SetBackgroundImage( 'gameContainer', val );
+			SetBackgroundImage( 'startPage', val );
+			SetBackgroundImage( 'gameChatPage', val );
+			SetBackgroundImage( 'loadingScreen', val );
+			SetBackgroundImage( 'awMainView', val );
+		});
+	}
+
+	AddOnListeners.ReloadBackground = ReloadBackground;
+
+	ReloadBackground();
+
+	let AMQAddonPort = chrome.runtime.connect( AMQAddonExtensionId );
+	AMQAddonPort.onMessage.addListener(function(message, port) {
+		let Handler = AddOnListeners[message.Topic];
+		if( Handler ) {
+			Handler( message.Data );
+		}
+	});
 }
