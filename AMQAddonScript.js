@@ -539,10 +539,9 @@ if (typeof afkKicker !== 'undefined') {
 	let AddOnListeners = {};
 
 	function SetBackgroundImage( j, i ) {
-		j = $('#'+j);
+		j = $(j);
 		if( j.length ) {
 			j[0].style.backgroundImage = i;
-			console.log( j[0].style.backgroundImage );
 		}
 	}
 
@@ -553,12 +552,12 @@ if (typeof afkKicker !== 'undefined') {
 				val = 'url(' + result + ')';
 				
 			} 
-			
-			SetBackgroundImage( 'gameContainer', val );
-			SetBackgroundImage( 'startPage', val );
-			SetBackgroundImage( 'gameChatPage', val );
-			SetBackgroundImage( 'loadingScreen', val );
-			SetBackgroundImage( 'awMainView', val );
+
+			SetBackgroundImage( '#gameContainer', val );
+			SetBackgroundImage( '#startPage', val );
+			SetBackgroundImage( '#gameChatPage > .col-xs-9', val );
+			SetBackgroundImage( '#loadingScreen', val );
+			SetBackgroundImage( '#awMainView', val );
 		});
 	}
 
