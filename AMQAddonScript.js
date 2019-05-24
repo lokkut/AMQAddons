@@ -37,47 +37,6 @@ GameChat.prototype.convertTypeToText = function (type, typeNumber) {
 	}
 };
 
-
-GameChat.prototype.addHistory = function (currentcount, totalcount, animeNames, songName, artist, type, typeNumber, weRight, allResults) {
-	if (!CurrentGameHistory) { return; }
-	let atBottom = this.$historyContainer.scrollTop() + this.$historyContainer.innerHeight() >= this.$historyContainer[0].scrollHeight - 10;
-
-	CurrentGameHistory.addRow({
-		index: currentcount,
-		type: this.convertTypeToText(type, typeNumber),
-		romaji: animeNames.romaji,
-		english: animeNames.english,
-		song_name: songName,
-		artist: artist,
-		correct: weRight,
-		results: allResults,
-		answers: HistoryAnswers
-	}).then((function (row) {
-
-		if (atBottom) {
-			this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
-		}
-		this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
-	}).bind(this)).then((function () {
-		
-		if( this.$historyButton.hasClass('selected') ) {
-			CurrentGameHistory.redraw(); 
-		}
-	}).bind(this));
-};
-
-GameChat.prototype.viewHistory = function () {
-	this.resetView();
-
-	this.$historyView.removeClass("hidden");
-	this.$historyButton.addClass('selected');
-	this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update');
-	this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
-	this.currentTab = this._TABS.HISTORY;
-
-	HistoryTables.forEach(function(a){a.redraw();})
-};
-
 _OldStuff.resetView = GameChat.prototype.resetView;
 GameChat.prototype.resetView = function () {
 	_OldStuff.resetView.call(this);
@@ -92,7 +51,7 @@ gameChat = new GameChat();
 function GetAnimeNameHtml(animeNames) {
 	let animeName;
 
-	if (options.showBothNames) {
+	if (options.showBoth) {
 		animeName = '<span class="Japanese">' + animeNames.romaji + '</span><br><span class="English">' + animeNames.english + "</span>";
 		if (animeNames.romaji == animeNames.english) {
 			animeName = animeNames.romaji;
@@ -105,12 +64,17 @@ function GetAnimeNameHtml(animeNames) {
 }
 
 // _OldStuff.showInfo = QuizInfoContainer.prototype.showInfo;
+QuizInfoContainer.prototype.fitAnimeNameToContainer = function()
+{
+	fitTextToContainer(this.$name, this.$nameContainer, 25, 11);
+}
+
 QuizInfoContainer.prototype.showInfo = function (animeNames, songName, artist, type, typeNumber, urls) {
 
 	let animeName = GetAnimeNameHtml(animeNames);
 
 	this.$name.html(animeName);
-	fitTextToContainer(this.$name, this.$nameContainer, 25, 11);
+	this.fitAnimeNameToContainer();
 	this.$songName.text(songName);
 	this.$songArtist.text(artist);
 	this.$songType.text(this.convertTypeToText(type, typeNumber));
@@ -187,9 +151,9 @@ var quiz = new Quiz();
 
 
 
-function LogSocket() {
+function LogSocket( ) {
 	socket._socket.on("command", function(payload) {
-		console.log( payload.command );
+		console.log( payload );
 	});
 }
 
@@ -209,7 +173,6 @@ function SetBackgroundImage( j, i ) {
 	}
 }
 
-AddOnListeners.ReloadBackground = ReloadBackground;
 
 let AMQAddonPort = chrome.runtime.connect( AMQAddonExtensionId );
 AMQAddonPort.onMessage.addListener(function(message, port) {
@@ -220,13 +183,20 @@ AMQAddonPort.onMessage.addListener(function(message, port) {
 });
 
 $(function() {
+	AddOnListeners.ReloadBackground = ReloadBackground;
+
 	DefaultCheckBox("AutoReady", "#smAutoReady");
 	//DefaultCheckBox("BothNames", "#smShowBoth", "showBothNames");
 	addSettings();
 	ReloadBackground();
-	
+
 	RoomSettingListener.bindListener();
-	QuizOverListener.bindListener();
+	// QuizOverListener.bindListener();
+	let n = quiz._quizOverListner.callback;
+	quiz._quizOverListner.callback = function(x,y) {
+		n(x,y);
+		DoAutoReady();
+	}
 
 	UpdateAcronymsListener.bindListener();
 

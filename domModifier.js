@@ -2,6 +2,29 @@
 
 if( $("#gameContainer").length > 0 ) {
 
+    /* Copy and pasting is bad */
+    function MakeMessage(Topic, Data) {
+        return { Topic: Topic, Data: Data };
+    }
+    
+    function ChromeSendMessage( x, y )
+    {
+        chrome.runtime.sendMessage( chrome.runtime.id, x, y );
+    }
+    
+    function SendMessage(Topic, Data, Callback) {
+        ChromeSendMessage( MakeMessage( Topic, Data ), function (result) {
+            if( Callback ) {
+                Callback(result);
+            }
+        });
+    }
+    
+    function GetOption(Key, Callback) {
+        SendMessage("GetOption", Key, Callback);
+    }
+    
+
     // add the history button and container
     $(`<div id="gcHistoryButton" class="col-xs-4 text-center clickAble" onclick="gameChat.viewHistory();">
         <h5>
@@ -13,19 +36,19 @@ if( $("#gameContainer").length > 0 ) {
         <ul id="gcHistoryContainer" style="overflow-y:scroll;height:100%;" class="gcList">
         </ul>
         <div id="aaHistoryFloater" class="floatingContainer" style="visibility:hidden">
-            <h3>Anime Name</h3>
+            <div id="aaAnimeNameHeader" class="diagonalheader"><h3>Anime Name</h3></div>
             <div id="aaHistoryFloatAnimeName" class="row">
                 <span id="aaHistoryFloatAnimeNameInner">
                     Anime Name
                 </span>
             </div>
-            <h3>Song Name</h3>
+            <div id="aaSongHeader" class="diagonalheader"><h3>Song Name</h3></div>
             <div id="aaHistoryFloatSongName" class="row">
                 <span id="aaHistoryFloatSongNameInner">
                     Song Name
                 </span>
             </div>
-            <h3>Guesses</h3>
+            <div id="aaGuessesHeader" class="diagonalheader"><h3>Guesses</h3></div>
             <ul id="aaHistoryFloatContainer">
             </ul>
         </div>
@@ -35,9 +58,17 @@ if( $("#gameContainer").length > 0 ) {
 
     let CssPath = chrome.runtime.getURL( "AMQAddonStyle.css" );
     let TabulatorCssPath = chrome.runtime.getURL( "thirdParty/tabulator.css" );
-    $("head").append( `<!--AMQ Addons-->
+    let AMQRestylePath = chrome.runtime.getURL( "AMQRestyle.css" );
+    let CSSText = `<!--AMQ Addons-->
     <link rel="stylesheet" type="text/css" href="` + CssPath + `"></link>
-    <link rel="stylesheet" type="text/css" href="` + TabulatorCssPath + `"></link>` );
+    <link rel="stylesheet" type="text/css" href="` + TabulatorCssPath + `"></link>`;
+    GetOption( "StyleChanger", function( Value ) {
+        if( Value ) {
+            CSSText += `<link rel="stylesheet" type="text/css" href="` + AMQRestylePath + `"></link>`;
+        }        
+        $("head").append( CSSText );
+    });
+    
 
     // add the new templates
     $(`<script id="gcIncorrectAnswerTemplate" type="text/template">
@@ -87,5 +118,10 @@ if( $("#gameContainer").length > 0 ) {
     InsertScript( "acronym.js" );
     InsertScript( "history.js" );
     InsertScript( "AMQAddonScript.js" );
-
+    GetOption( "StyleChanger", function( Value ) {
+        if( Value ) {
+            InsertScript( "AMQRestyle.js" );
+        }
+    });
+    
 }

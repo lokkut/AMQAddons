@@ -153,3 +153,63 @@ function FakeHistory() {
 		CurrentGameHistory.addRow({ index: i, type: 'fake' });
 	}
 }
+
+function addPermHistory( songname, correct ) {
+    if( options.StorePermHistory ) {
+        let count = localStorage.getItem('historyPermTotal' + songname );
+        localStorage.setItem( 'historyPermTotal' + songname, Number( count ) + 1 );
+        if( correct ) {
+            let correctcount = localStorage.getItem('historyPermCorrect' + songname );
+            localStorage.setItem( 'historyPermCorrect' + songname, Number(correctcount) + 1 );
+        }        
+    }
+}
+
+GameChat.prototype.addHistory = function (currentcount, totalcount, animeNames, songName, artist, type, typeNumber, weRight, allResults) {
+    if (!CurrentGameHistory) { return; }
+
+    allResults.players.forEach((playerResult) => {
+        let player = quiz.players[playerResult.roomSlot];
+        if( player && player.isSelf() ) {
+            addPermHistory( songName, weRight );        
+        }
+    });
+    
+    let scrollTop = this.$historyContainer.scrollTop();
+	let atBottom = scrollTop + this.$historyContainer.innerHeight() >= this.$historyContainer[0].scrollHeight - 10;
+	CurrentGameHistory.addRow({
+		index: currentcount,
+		type: this.convertTypeToText(type, typeNumber),
+		romaji: animeNames.romaji,
+		english: animeNames.english,
+		song_name: songName,
+		artist: artist,
+		correct: weRight,
+		results: allResults,
+		answers: HistoryAnswers
+	}).then((function (row) {		
+		if( this.$historyButton.hasClass('selected') ) {
+			CurrentGameHistory.redraw(); 
+		}
+
+	}).bind(this)).then((function () {
+		if (atBottom) {
+			this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
+		} else {
+            this.$historyContainer.scrollTop(scrollTop);
+        }
+		this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update')
+	}).bind(this));
+};
+
+GameChat.prototype.viewHistory = function () {
+	this.resetView();
+
+	this.$historyView.removeClass("hidden");
+	this.$historyButton.addClass('selected');
+	this.$SCROLLABLE_CONTAINERS.perfectScrollbar('update');
+	this.$historyContainer.scrollTop(this.$historyContainer.prop("scrollHeight"));
+	this.currentTab = this._TABS.HISTORY;
+
+	HistoryTables.forEach(function(a){a.redraw();})
+};

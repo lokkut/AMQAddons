@@ -6,7 +6,8 @@
     "permissions": [
       "activeTab",
       "https://animemusicquiz.com/*",
-      "storage"
+      "storage",
+      "unlimitedStorage"
     ],    
     "web_accessible_resources": [
     "AMQAddonScript.js",
@@ -17,8 +18,9 @@
     "history.js",
     "AMQAddonScript.js",
     "extComms.js",
-    "thirdParty/tabulator.js",
-    "thirdParty/tabulator.css"
+    "thirdParty/tabulator.css",
+    "AMQRestyle.js",
+    "AMQRestyle.css"
     ],
     "externally_connectable": {
       "matches": ["https://animemusicquiz.com/*"]

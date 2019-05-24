@@ -1,5 +1,8 @@
 let customOptions = [{ id: "showBoth", popupText: "Shows both the romanji and english name if availible", labelText: "Show both names", type: "tickbox" }, 
-{ id: "AutoReadySettings", popupText: "Auto Readys when lobby settings change", labelText: "Auto-Ready on setting change", type: "tickbox" }];
+{ id: "AutoReadySettings", popupText: "Auto Readys when lobby settings change", labelText: "Auto-Ready on setting change", type: "tickbox" },
+//{ id: "StorePermHistory", popupText: "Stores history in local storage", labelText: "Permenantly store history", type: "tickbox" }, // this doesn't even work yet :|
+{ id: "StyleChanger", popupText: "Custom style (lokkut, not finished)", labelText: "Video-focused Style", type: "tickbox" },
+];
 
 function DoAutoReady() {
 	if (options.AutoReady && !lobby.isHost()) {
@@ -7,7 +10,7 @@ function DoAutoReady() {
 	}
 }
 
-var QuizOverListener = new Listener("quiz over", DoAutoReady);
+// var QuizOverListener = new Listener("quiz over", DoAutoReady);
 var RoomSettingListener = new Listener("Room Settings Changed", function () {
 	if (options.AutoReadySettings) {
 		DoAutoReady();
@@ -59,7 +62,7 @@ function ReloadBackground() {
 }
 
 function addSettings() {
-	console.log("test");
+
 	let tabs = $('#settingModal > .modal-dialog > .modal-content > .tabContainer')[0];
 	let modalBody = $('#settingModal > .modal-dialog > .modal-content > .modal-body')[0];
 	let addOnSettings = document.createElement("div");
@@ -134,3 +137,12 @@ function createTickBox(id, popupText, labelText) {
     DefaultCheckBox( id, '#sm' + id );
 	return tickObj;
 }
+
+
+$(function() {
+    GetOption("DefaultSettings", function (result) {
+        if (result) {
+            hostModal.DEFUALT_SETTINGS = result; // spell default right pls
+        }
+    });
+});
