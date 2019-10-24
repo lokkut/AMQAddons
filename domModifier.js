@@ -95,6 +95,8 @@ if( $("#gameContainer").length > 0 ) {
         </div>
     </div>`).insertAfter("#avatarUserImgContainer");
 
+    $(`<button type="button" class="btn btn-primary hidden" id="mhPrepareButton">Prepare</button>`).insertAfter("#mhChangeButton");
+
     $('#mhHostSettingContainer > .modal-footer').prepend(`<button id="aaSetDefaultButton" type="button" class="btn btn-default">
         Set Default
     </button>`); 
@@ -117,11 +119,12 @@ if( $("#gameContainer").length > 0 ) {
     InsertScript( "settings.js" );
     InsertScript( "acronym.js" );
     InsertScript( "history.js" );
+    // InsertScript( "lobbySettings.js" );
     InsertScript( "AMQAddonScript.js" );
-    GetOption( "StyleChanger", function( Value ) {
+    /*GetOption( "StyleChanger", function( Value ) {
         if( Value ) {
             InsertScript( "AMQRestyle.js" );
         }
-    });
+    });*/
     
 }
