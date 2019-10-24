@@ -77,7 +77,7 @@ let NewHistoryTable = function (players) {
 
 
 			data.answers.answers.forEach((answer) => {
-				let player = Players[answer.roomSlot];
+				let player = Players[answer.gamePlayerId];
 				if (player) {
 					newrows[player.name] = { answer: answer.answer };
 
@@ -85,7 +85,7 @@ let NewHistoryTable = function (players) {
 			});
 
 			data.results.players.forEach((playerResult) => {
-				let player = Players[playerResult.roomSlot];
+				let player = Players[playerResult.gamePlayerId];
 				if (player && newrows[player.name]) {
 					newrows[player.name].correct = playerResult.correct;
 					newrows[player.name].inMal = playerResult.inMal;
@@ -130,17 +130,22 @@ let NewHistoryTable = function (players) {
 };
 
 let HistorySpectateGameListener = new Listener("Spectate Game", function(payload) {
+	if( payload.error) {
+		return;
+	}
+
 	let Players = {};
-	if( payload ) {
+	if( payload && !payload.inLobby ) {
 		for( let i in payload.quizState.players ) {
 			Players[Number(payload.quizState.players[i].roomSlot)] = { name : payload.quizState.players[i].name };
 		}
 		NewHistoryTable( Players );
 	}
 });
+
 let HistoryQuizStartListener = new Listener("quiz ready", function()
 {
-	NewHistoryTable( lobby.players );
+	NewHistoryTable( quiz.players );
 } );
 
 let HistoryQuizAnswerListener = new Listener("player answers", function (data) {
@@ -169,8 +174,8 @@ GameChat.prototype.addHistory = function (currentcount, totalcount, animeNames, 
     if (!CurrentGameHistory) { return; }
 
     allResults.players.forEach((playerResult) => {
-        let player = quiz.players[playerResult.roomSlot];
-        if( player && player.isSelf() ) {
+        let player = quiz.players[playerResult.gamePlayerId];
+        if( player && player.isSelf ) {
             addPermHistory( songName, weRight );        
         }
     });
