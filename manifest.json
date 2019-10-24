@@ -1,6 +1,6 @@
 {
     "name": "AMQ Addons",
-    "version": "1.07",
+    "version": "1.09",
     "description": "Additional Features for AnimeMusicQuiz.com",
     "manifest_version": 2,
     "permissions": [
