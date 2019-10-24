@@ -96,58 +96,65 @@ QuizInfoContainer.prototype.setTotalSongCount = function (count) {
 
 
 // Quiz stuff
-let _OldQuiz = Quiz;
+_OldStuff.Quiz = Quiz;
 
-Quiz = function () {
-	_OldQuiz.call(this);
+class NewQuiz extends Quiz {
+	constructor() {
+		super()
+		//_OldStuff.Quiz.call(this);
 
-	this.QUIZ_STATES = {
-		LOADING: 0,
-		WAITING_FOR_READY: 1,
-		GUESS_PHASE: 3,
-		ANSWER_PHASE: 4,
-		SHOW_ANSWER_PHASE: 5,
-		END_PHASE: 6,
-		WAITING_BUFFERING: 7,
-		WAITING_ANSWERS_PHASE: 8
-	};
+		this.QUIZ_STATES = {
+			LOADING: 0,
+			WAITING_FOR_READY: 1,
+			GUESS_PHASE: 3,
+			ANSWER_PHASE: 4,
+			SHOW_ANSWER_PHASE: 5,
+			END_PHASE: 6,
+			WAITING_BUFFERING: 7,
+			WAITING_ANSWERS_PHASE: 8
+		};
 
-	/*let OldQuizOver = this._quizOverListner.callback;
-	this._quizOverListner.callback = function (roomSettings) {
-		OldQuizOver.call(this, roomSettings);
-		
-	}.bind(this);*/
+		/*let OldQuizOver = this._quizOverListner.callback;
+		this._quizOverListner.callback = function (roomSettings) {
+			OldQuizOver.call(this, roomSettings);
+			
+		}.bind(this);*/
 
-	this.totalSongCount = '?';
-	this.currentSongCount = '?';
+		this.totalSongCount = '?';
+		this.currentSongCount = '?';
 
-	let _OldResultListener = this._resultListner.callback;
-	this._resultListner.callback = function (result) {
-		_OldResultListener.call(this, result);
-		let weRight = false;
-		result.players.forEach((playerResult) => {
-			let player = this.players[playerResult.roomSlot];
-			if (player) {
-				if (player.isSelf() && playerResult.correct) {
-					weRight = true;
+		let _OldResultListener = this._resultListner.callback;
+		this._resultListner.callback = function (result) {
+			_OldResultListener.call(this, result);
+			let weRight = false;
+			result.players.forEach((playerResult) => {
+				let player = this.players[playerResult.gamePlayerId];
+				if (player) {
+					if (player.isSelf && playerResult.correct) {
+						weRight = true;
+					}
 				}
-			}
-		});
-		let songInfo = result.songInfo;
-		gameChat.addHistory(this.infoContainer.currentSongCount, this.infoContainer.totalSongCount, songInfo.animeNames, songInfo.songName, songInfo.artist, songInfo.type, songInfo.typeNumber, weRight, result);
-	}.bind(this);
+			});
+			let songInfo = result.songInfo;
+			gameChat.addHistory(this.infoContainer.currentSongCount, this.infoContainer.totalSongCount, songInfo.animeNames, songInfo.songName, songInfo.artist, songInfo.type, songInfo.typeNumber, weRight, result);
+		}.bind(this);
 
-	this.setup();
+		this.setup();
+
+		this.$inputContainer.off("click");
+	}
+
+	sendAnswer(showState) {
+		if (!this.inQuiz) { return; }
+		return super.sendAnswer(showState);
+	};
 }
 
-Quiz.prototype = _OldQuiz.prototype;
-_OldStuff.SendAnswer = Quiz.prototype.sendAnswer;
-Quiz.prototype.sendAnswer = function (showState) {
-	if (!this.inQuiz) { return; }
-	return _OldStuff.SendAnswer.call(this, showState);
-};
+// Quiz.prototype = _OldStuff.Quiz.prototype;
+// _OldStuff.SendAnswer = Quiz.prototype.sendAnswer;
+// Quiz.prototype.
 
-var quiz = new Quiz();
+quiz = new NewQuiz();
 
 
 
@@ -182,7 +189,7 @@ AMQAddonPort.onMessage.addListener(function(message, port) {
 	}
 });
 
-$(function() {
+function StartAddOn() {
 	AddOnListeners.ReloadBackground = ReloadBackground;
 
 	DefaultCheckBox("AutoReady", "#smAutoReady");
@@ -190,13 +197,63 @@ $(function() {
 	addSettings();
 	ReloadBackground();
 
-	RoomSettingListener.bindListener();
+    hostModal.$prepareButton = $('#mhPrepareButton');
+
+    let changeSettings = false;
+	let settingChanges = {};
+    hostModal.$prepareButton.on('click', () => {
+		hostModal.hide();
+		let settings = hostModal.getSettings();
+		if (!settings) {
+			return;
+		}
+		
+		let changed = false;
+		for (let key in settings) {
+			if (settings.hasOwnProperty(key)) {
+				if (JSON.stringify(lobby.settings[key]) !== JSON.stringify(settings[key])) { //Use stringfy to compare multivalue fields
+					settingChanges[key] = settings[key];
+					changed = true;
+				}
+			}
+		}
+
+		if( changed ) {
+			changeSettings = true;
+		}
+	});
+	
 	// QuizOverListener.bindListener();
 	let n = quiz._quizOverListner.callback;
 	quiz._quizOverListner.callback = function(x,y) {
 		n(x,y);
 		DoAutoReady();
-	}
+
+		hostModal.$prepareButton.addClass("hidden");
+		if( changeSettings ) {
+			socket.sendCommand({
+				type: "lobby",
+				command: "change game settings",
+				data: settingChanges
+			});
+			settingChanges = {};
+			changeSettings = false;
+		}		
+	};
+
+	Quiz.prototype.viewSettings = function () {
+		hostModal.setModeGameSettings(lobby.isHost);
+		hostModal.showSettings();
+		hostModal.$changeButton.addClass("hidden");
+		$("#mhHostModal").modal('show');		
+	};
+
+	(new Listener("quiz ready", function()
+	{
+		if( lobby.isHost ) {			
+			hostModal.$prepareButton.removeClass("hidden");
+		}
+	})).bindListener();
 
 	UpdateAcronymsListener.bindListener();
 
@@ -205,4 +262,6 @@ $(function() {
 	HistoryQuizAnswerListener.bindListener();
 	
 	
-});
+}
+
+$(StartAddOn);
