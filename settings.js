@@ -1,20 +1,61 @@
 let customOptions = [{ id: "showBoth", popupText: "Shows both the romanji and english name if availible", labelText: "Show both names", type: "tickbox" }, 
 { id: "AutoReadySettings", popupText: "Auto Readys when lobby settings change", labelText: "Auto-Ready on setting change", type: "tickbox" },
+{ id: "AutoStartOnFullReady", popupText: "Auto start on full ready", labelText: "Auto-Start on full lobby ready", type: "tickbox" },
 //{ id: "StorePermHistory", popupText: "Stores history in local storage", labelText: "Permenantly store history", type: "tickbox" }, // this doesn't even work yet :|
-{ id: "StyleChanger", popupText: "Custom style (lokkut, not finished)", labelText: "Video-focused Style", type: "tickbox" },
+//{ id: "StyleChanger", popupText: "Custom style (lokkut, not finished)", labelText: "Video-focused Style", type: "tickbox" },
 ];
 
 function DoAutoReady() {
-	if (options.AutoReady && !lobby.isHost()) {
-		lobby.fireMainButtonEvent();
+	if (options.AutoReady && !lobby.isHost) {
+		// lobby.fireMainButtonEvent();
+		lobby.isReady = true;
+		socket.sendCommand({
+			type: "lobby",
+			command: "set ready",
+			data: { ready: true }
+		});
+		lobby.updateMainButton();
 	}
 }
+/*
+// maintain ready button lol
+// let _oldSetReady = GamePlayer.prototype.setReady;
+class LobbyPlayer_Addon extends LobbyPlayer {
+	constructor(name, level, lobbySlot, host, avatarInfo, ready) {
+		super( name, level, lobbySlot, host, avatarInfo, ready );
+	}
+
+	set ready (newState) {
+		super.ready = newState;
+		if( this.isSelf ) {
+			lobby.updateMainButton();
+		}
+	};
+};*/
 
 // var QuizOverListener = new Listener("quiz over", DoAutoReady);
-var RoomSettingListener = new Listener("Room Settings Changed", function () {
-	if (options.AutoReadySettings) {
-		DoAutoReady();
-	}
+$(function() {
+	var RoomSettingListener = new Listener("Room Settings Changed", function () {
+		if (options.AutoReadySettings) {
+			DoAutoReady();
+		}
+	});
+
+	var PlayerReadyListener = new Listener('Player Ready Change', function (change) {
+		lobby.players[change.gamePlayerId].ready = change.ready;
+		if (options.AutoReady && options.AutoStartOnFullReady && lobby.isHost) {
+			if (lobby.numberOfPlayersReady === lobby.numberOfPlayers) {
+				socket.sendCommand({
+					type: "lobby",
+					command: "start game"
+				});
+			}
+		}
+	} );
+
+
+	PlayerReadyListener.bindListener();
+	RoomSettingListener.bindListener();
 });
 
 $("#aaSetDefaultButton").on('click', () => {
